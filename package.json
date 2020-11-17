@@ -9,7 +9,11 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "firebase": "latest",
+    "@firebase/firestore": "latest",
+    "@firebase/database": "latest",
+    "vuebars": "latest"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
