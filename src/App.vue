@@ -9,9 +9,7 @@
               :gradient="['#f94144', '#ffe74c']"
               :barWidth="30"
               :height="300"
-
               :max="10"
-
               :label-rotate=0
               :growDuration="1"></bars>
       </div>
@@ -23,18 +21,22 @@
               :gradient="['#f94144', '#ffe74c']"
               :barWidth="30"
               :height="300"
-
-              :max="10"
+              :max="6"
               :label-rotate=0
               :growDuration="1"></bars>
       </div>
   </div>
-    <div class="base card">
-      <table width="100%">
-        <tr>
+    <div class="base card" v-if="Visible">
+      <table width="100%" >
+        <tr style="font-size: 1.5vw;">
           <th>Номер</th>
           <th>Завдання</th>
           <th>Оцінювання</th>
+        </tr>
+        <tr style="font-size: 1vw;" v-bind:key="t" v-for="t in TaskData">
+         <th v-if="!t.Visible">{{t.Date}}</th>
+          <th  v-if="!t.Visible">{{t.Description}}</th>
+          <th v-if="!t.Visible">{{t.Points}}</th>
         </tr>
 
       </table>
@@ -44,14 +46,6 @@
 
 <script>
   import Bars from 'vuebars'
-  var groupData;
-  var taskData;
-  var rating = new Array();
-  var group = new Array();
-  var tasks = new Array();
- // var taskNumber = new Array();
- // var task = new Array();
- // var taskValue = new Array();
 
 export default {
   name: 'App',
@@ -62,53 +56,48 @@ export default {
     Rating: Array,
     Group:Array,
     Tasks:Array,
-    TaskNumber : Array,
-    Task : Array,
-    TaskValue : Array,
-    TaskData: Array
-  },
-  mounted () {
-    groupData=new Array(this.getData('Rating'));
-    taskData= new Array(this.getData('Tasks'));
 
-    var interval = setInterval(function() {
-      if ((groupData[0][1]!=null)){
-        console.log(groupData[0][1].FinalRating);
-        groupData[0].forEach(element => rating.push(element.FinalRating));
-        groupData[0].forEach(element => group.push(element.Group));
-        groupData[0].forEach(element => tasks.push(element.TaskReceived));
-        console.log(taskData[0])
-
-        /*
-        taskData[0].forEach(element => taskNumber.push(element.Task));
-        taskData[0].forEach(element => task.push(element.Description));
-        taskData[0].forEach(element => taskValue.push(element.Points));
-        */
-        clearInterval(interval);
-      }
-    }, 500);
-    this.Rating=rating;
-    this.Group=group;
-    this.Tasks=tasks;
+    TaskData: Array,
+      Visible: Boolean,
   },
+  mounted(){
+    this.Visible=false;
+    this.Rating= new Array;
+    this.Group= new Array;
+    this.Tasks= new Array;
+    this.TaskData= [];
+    var that=this;
+    this.getData(that);
+  },
+
+
 
   methods:{
-    getData(key){
-      var innerData= new Array();
-      database.ref('1P4D8W1bSUGsFw0-eZIZd3RhUBM432C7fw6CfUJIVNdk/'+key).once('value',function(querySnapshot) {
+    getData(context){
+      var ratingDb =database.ref('1P4D8W1bSUGsFw0-eZIZd3RhUBM432C7fw6CfUJIVNdk/Rating');
+      var tasksDb =database.ref('1P4D8W1bSUGsFw0-eZIZd3RhUBM432C7fw6CfUJIVNdk/Tasks');
+      ratingDb.once('value',function(querySnapshot) {
         querySnapshot.forEach(function (snapshot) {
           ratingData.push(snapshot.val())
         });
-        //ratingData.forEach(element => finalRating.push(element.FinalRating))
-        ratingData.forEach(element => innerData.push(element))
+        ratingData.forEach(element => context.Rating.push(element.FinalRating));
+        ratingData.forEach(element => context.Group.push(element.Group));
+        ratingData.forEach(element => context.Tasks.push(element.TaskReceived));
+      });
+      tasksDb.once('value',function(querySnapshot) {
+        var key=0;
+        querySnapshot.forEach(function (snapshot) {
+          context.TaskData[key++]=snapshot.val();
+        });
+        setTimeout(function(){context.Visible=true; console.log(context.TaskData); },1000)
       })
-      return innerData;
     }
   },
 
 }
   import firebase from "firebase";
   let ratingData = new Array();
+  //let tasksData = new Array();
   //let finalRatig = new Array();
   var config = {
     apiKey: 'AIzaSyCGPNl0TuaHJR898UpNGbW5OBNjdTg6Vl4',
@@ -162,10 +151,9 @@ export default {
   }
   .chart{
     margin: 0;
-    padding: 0;
     margin-left: auto;
     margin-right: auto;
-    width: 80%;
+    width: 90%;
     height: 90%;
     overflow: inherit;
   }
@@ -176,19 +164,18 @@ export default {
   }
   .base{
     margin: 0;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 0;
     padding-top: 10px;
 
     margin-left: auto;
     margin-right: auto;
     width: 80vw;
-    height: 22vw;
+    min-heightheight: 22vw;
     overflow: visible;
     color: #565656;
     padding-bottom: 2vw;
     display: inline-block;
-
   }
 
 
@@ -201,9 +188,23 @@ export default {
   color: #2c3e50;
   margin-top: 40px;
 }
-body{
-  background-color: black;
+
+table{
+  border-spacing: 10px;
+  border-collapse: collapse;;
+  border:solid white 2px;
 }
+th{
+  min-height: 50vw;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.2);
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-size: 1vw;
+  min-width: 8vw;
+}
+
   .card {
     /* Add shadows to create the "card" effect */
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
@@ -215,5 +216,7 @@ body{
   .card:hover {
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   }
+  @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
 
+  }
 </style>
